@@ -1,18 +1,10 @@
-from fastapi import FastAPI
+from typing import Dict
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
 from .html import html
 from .game import Player, Rock, Paper, Scissors, get_outcome
-
-
-
-app = FastAPI()
-
-result_lut = {
-        -1: "LOSS",
-        0: "DRAW",
-        1: "WIN"}
-
 
 
 class ConnectionManager:
@@ -26,8 +18,8 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         del self.active_connections[websocket]
 
-    async def send_personal_message(self, message: str, websocket: Websocket):
-        await websocket.sent_text(message)
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
 
     def opponent_online(self):
         # Check if there's someone to play against
@@ -35,7 +27,9 @@ class ConnectionManager:
             return True
         return False
 
+
 manager = ConnectionManager()
+app = FastAPI()
 
 
 @app.get("/")
@@ -72,6 +66,6 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             computer.on_game_end(result) # Reset both computer and player
             await manager.send_personal_message(msg, websocket)
 
-        except WebSocketDisconnect:
+    except WebSocketDisconnect:
             manager.dosconnect(websocket) # Best practices from FastAPI example
 

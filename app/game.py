@@ -29,7 +29,7 @@ class Scissors(Throw):
 
 
 class Player:
-    def __init__(self, username: str):
+    def __init__(self, username: str = None):
         self.username = username
         self._throw = None
         self.last_throw = None
